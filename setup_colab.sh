@@ -31,8 +31,11 @@ pip install -q "rdkit>=2023.9.1" "scikit-learn>=1.3" "scipy>=1.11" "pandas>=2.0"
 echo "----------------------------------------------------------------"
 echo " 2/4  PyTDC (benchmark group + official metrics)"
 echo "----------------------------------------------------------------"
-# PyTDC는 옛 numpy 핀을 끌고 오므로 numpy를 다시 안 깨도록 마지막에 정리
-pip install -q PyTDC
+# ★중요: PyTDC 일반 설치는 옛 의존성(accelerate 등)이 numpy를 1.x로 다운그레이드시켜
+#   "numpy.dtype size changed (Expected 96, got 88)" 바이너리 충돌을 유발한다.
+#   → --no-deps로 PyTDC만 설치하고, 실제 런타임 의존성만 따로(=numpy-safe) 설치.
+pip install -q --no-deps PyTDC
+pip install -q requests fuzzywuzzy tqdm huggingface_hub  # tdc 런타임 의존성 (numpy 미건드림)
 
 echo "----------------------------------------------------------------"
 echo " 3/4  PyTorch Geometric (torch 버전에 맞춰 wheel index 자동 선택)"
@@ -53,9 +56,10 @@ PY
 pip install -q "torch-geometric>=2.4"
 
 echo "----------------------------------------------------------------"
-echo " 4/4  numpy 호환성 최종 정리 (TDC가 깬 경우 복구)"
+echo " 4/4  numpy 호환성 최종 정리 (Colab 기본 numpy 2.x 유지)"
 echo "----------------------------------------------------------------"
-pip install -q "numpy>=1.26" "matplotlib>=3.7"
+# Colab 기본 패키지(rdkit/torch/scipy)는 numpy 2.x로 빌드됨 → 2.x로 고정해 충돌 방지.
+pip install -q "numpy>=2.0" "matplotlib>=3.7"
 
 echo "================================================================"
 echo " verification"
